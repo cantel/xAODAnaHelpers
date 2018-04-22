@@ -51,6 +51,8 @@ public:
   std::string m_truthParticlesContainerName = "";
   std::string m_trackParticlesContainerName = "";
   std::string m_l1JetContainerName = "";
+  std::string m_vertexContainerName = "";
+  std::string m_vertexBranchName = "vertices";
   bool m_sortL1Jets = false;
   bool m_retrievePV = true;
 
@@ -72,10 +74,12 @@ protected:
   std::vector<std::string> m_jetContainers; //!
   std::vector<std::string> m_truthJetContainers; //!
   std::vector<std::string> m_trigJetContainers; //!
+  std::vector<std::string> m_vertexContainers; //!
 
   std::vector<std::string> m_jetBranches; //!
   std::vector<std::string> m_truthJetBranches; //!
   std::vector<std::string> m_trigJetBranches; //!
+  std::vector<std::string> m_vertexBranches; //!
 
   std::map<std::string, HelpTreeBase*> m_trees;            //!
 

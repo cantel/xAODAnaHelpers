@@ -83,6 +83,19 @@ EL::StatusCode TreeAlgo :: initialize ()
     return EL::StatusCode::FAILURE;
   }
 
+  std::istringstream ss_vertex_containers(m_vertexContainerName);
+  while ( std::getline(ss_vertex_containers, token, ' ') ){
+    m_vertexContainers.push_back(token);
+  }
+  std::istringstream ss_vertex_names(m_vertexBranchName);
+  while ( std::getline(ss_vertex_names, token, ' ') ){
+    m_vertexBranches.push_back(token);
+  }
+  if( !m_vertexContainerName.empty() && m_vertexContainers.size()!=m_vertexBranches.size()){
+    ANA_MSG_ERROR( "The number of vertex containers must be equal to the number of vertex name branches. Exiting");
+    return EL::StatusCode::FAILURE;
+  }
+
   // allow to store different variables for each jet collection (reco and trig only, default: store the same)
   std::istringstream ss(m_jetDetailStr);
   while ( std::getline(ss, token, '|') ){
@@ -252,6 +265,13 @@ EL::StatusCode TreeAlgo :: execute ()
     if (!m_photonContainerName.empty() )        { helpTree->AddPhotons(m_photonDetailStr);                         }
     if (!m_truthParticlesContainerName.empty()) { helpTree->AddTruthParts("xAH_truth", m_truthParticlesDetailStr); }
     if (!m_trackParticlesContainerName.empty()) { helpTree->AddTrackParts(m_trackParticlesContainerName, m_trackParticlesDetailStr); }
+
+    if (!m_vertexContainerName.empty() )      {
+      for(unsigned int ll=0; ll<m_vertexContainers.size();++ll){
+        helpTree->AddMyVertexInfo (ll, m_vertexBranches.at(ll).c_str());
+      }
+    }
+
   }
 
   /* THIS IS WHERE WE START PROCESSING THE EVENT AND PLOTTING THINGS */
@@ -265,7 +285,14 @@ EL::StatusCode TreeAlgo :: execute ()
   }
   const xAOD::Vertex* primaryVertex = m_retrievePV ? HelperFunctions::getPrimaryVertex( vertices , msg() ) : nullptr;
 
+  	
+  
+
+  std::cout<<"In TreeAlg:  What is the size of these systNames ?? "<<event_systNames.size()<<std::endl;
+
   for(const auto& systName: event_systNames){
+
+    std::cout<<"In TreeAlg:  What are these systNames ?? "<<systName<<std::endl;
     auto& helpTree = m_trees[systName];
 
     // assume the nominal container by default
@@ -290,6 +317,27 @@ EL::StatusCode TreeAlgo :: execute ()
     if (std::find(metSystNames.begin(), metSystNames.end(), systName) != metSystNames.end()) metSuffix = systName;
 
     helpTree->FillEvent( eventInfo, m_event );
+
+    // own code! to get damn sumpt of vertices
+   std::vector<float> ftkvertex_sumptsquared;
+   if (!m_vertexContainerName.empty()) {
+      bool reject = false;
+      for(unsigned int ll=0; ll<m_vertexContainers.size();++ll){
+      	ANA_MSG_DEBUG("about to fill for vertices "<<m_vertexContainers.at(ll));
+        if ( !HelperFunctions::isAvailable<xAOD::VertexContainer>(m_vertexContainers.at(ll), m_event, m_store, msg()) ) {
+          reject = true;
+          break;
+        }
+  	const xAOD::VertexContainer* secondvertices(nullptr);
+    	ANA_CHECK( HelperFunctions::retrieve(secondvertices, m_vertexContainers.at(ll), m_event, m_store, msg()) );
+    	std::vector<float> vertex_sumptsquared = HelperFunctions::getVertexSumpTsquared( secondvertices, msg() );
+        helpTree->FillMyVertexInfo( vertex_sumptsquared, m_vertexBranches.at(ll) );
+	std::string ftkstring = "FTK";
+        if ((m_vertexContainers.at(ll)).find(ftkstring) != std::string::npos)
+	ftkvertex_sumptsquared = vertex_sumptsquared;
+   }
+      if ( reject ) continue;
+  }
 
     // Fill trigger information
     if ( !m_trigDetailStr.empty() )    {
@@ -360,7 +408,14 @@ EL::StatusCode TreeAlgo :: execute ()
 
         const xAOD::JetContainer* inTrigJets(nullptr);
         ANA_CHECK( HelperFunctions::retrieve(inTrigJets, m_trigJetContainers.at(ll), m_event, m_store, msg()) );
-        helpTree->FillJets( inTrigJets, HelperFunctions::getPrimaryVertexLocation(vertices, msg()), m_trigJetBranches.at(ll) );
+	
+	// my own code - to deal with unsorted FTK vertices
+	int PV0pos(0);
+	if ( !ftkvertex_sumptsquared.empty())
+        	PV0pos = std::distance( ftkvertex_sumptsquared.begin(), std::max_element(ftkvertex_sumptsquared.begin(), ftkvertex_sumptsquared.end()));
+	ANA_MSG_DEBUG("In TreeAlg: returning trigger PV0 vertex position "<<PV0pos); 
+
+        helpTree->FillJets( inTrigJets, PV0pos, m_trigJetBranches.at(ll) );
       }
 
       if ( reject ) continue;

@@ -362,6 +362,56 @@ float HelperFunctions::getPrimaryVertexZ(const xAOD::Vertex* pvx)
   return pvx_z;
 }
 
+std::vector<float> HelperFunctions::getVertexSumpTsquared( const xAOD::VertexContainer* vertexContainer, MsgStream& msg)
+{
+
+  msg.setName(msg.name()+".getVertexSumpTsquared");
+  std::vector<float> sumptsquared;
+
+  if (vertexContainer == nullptr ){
+		msg<< MSG::ERROR << "Vertex container is a null pointer. returning an empty vector." << endmsg;
+		return sumptsquared;
+  } 
+
+  unsigned int vtxcnt(0);
+
+  msg << MSG::DEBUG << "looping over "<< vertexContainer->size()<<" vertices"<<endmsg;
+  for( auto vtx_itr : *vertexContainer )
+  {
+	vtxcnt++;
+	try {
+		vtx_itr->trackParticleLinks();
+	} catch (...) {
+		msg<< MSG::ERROR << "No track links exist for these vertices - can't find vertex with max sum pt ! Returning an empty vector" << endmsg;
+		return sumptsquared;
+	}
+	// stupid roundabout way to check if track links exist because stupid vxTrackAtVertexAvailable() function does not exist for AthAnalysisBase.
+	const std::vector< ElementLink< xAOD::TrackParticleContainer > > tpLinks = vtx_itr->trackParticleLinks();
+	unsigned int tp_size = tpLinks.size();
+	msg << MSG::DEBUG << "number of track links found: "<<tp_size<<endmsg;
+	float vtxsumpt(0.);
+	if(tp_size){
+	for(auto link: tpLinks) {
+	if ( !link) { msg<<MSG::WARNING<<"invalid track link.."<<endmsg; }
+	else {
+        const xAOD::TrackParticle *vtxtrk = *link;
+	if ( vtxtrk ) {
+	//if ( vtxtrk->pt() > 1000. ) { 
+	vtxsumpt+= (vtxtrk->pt()*vtxtrk->pt());
+	}
+	else msg<< MSG::WARNING << "One track particle not valid for vertex # "<<vtxcnt << endmsg;
+	}
+	}
+	sumptsquared.push_back(vtxsumpt);
+	}
+	else sumptsquared.push_back(-1);
+	
+  }
+
+  msg << MSG::INFO << "retrurning a vector of size "<< sumptsquared.size()<<endmsg;
+  return sumptsquared;
+}
+
 bool HelperFunctions::sort_pt(const xAOD::IParticle* partA, const xAOD::IParticle* partB){
   return partA->pt() > partB->pt();
 }

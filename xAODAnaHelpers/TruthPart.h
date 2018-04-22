@@ -12,6 +12,9 @@ namespace xAH {
       //TruthPart() { };
       //virtual ~TruthPart();
       int pdgId;
+      float pt;
+      float eta;
+      float phi;
       int status;
       int barcode;
 

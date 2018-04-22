@@ -43,6 +43,9 @@ namespace xAH {
       
       // All
       std::vector<int>* m_pdgId;
+      std::vector<float>* m_pt;
+      std::vector<float>* m_eta;
+      std::vector<float>* m_phi;
       std::vector<int>* m_status;
       std::vector<int>* m_barcode;
     

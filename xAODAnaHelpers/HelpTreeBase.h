@@ -69,6 +69,7 @@ public:
 
   void AddEvent       (const std::string detailStr = "");
   void AddTrigger     (const std::string detailStr = "");
+  void AddMyVertexInfo     ( unsigned int number,  const std::string vertexName = "");
   void AddJetTrigger  (const std::string detailStr = "");
   void AddMuons       (const std::string detailStr = "", const std::string muonName = "muon");
   void AddElectrons   (const std::string detailStr = "", const std::string elecName = "el");
@@ -115,6 +116,7 @@ public:
   Trig::TrigDecisionTool*      m_trigDecTool;
 
   void FillEvent( const xAOD::EventInfo* eventInfo, xAOD::TEvent* event = nullptr );
+  void FillMyVertexInfo( std::vector<float> sumptsquared, std::string vertexName );
 
   void FillTrigger( const xAOD::EventInfo* eventInfo );
   void FillJetTrigger();
@@ -160,6 +162,7 @@ public:
   void Fill();
   void ClearEvent();
   void ClearTrigger();
+  void ClearMyVertexInfo();
   void ClearJetTrigger();
   void ClearMuons       (const std::string jetName = "muon");
   void ClearElectrons   (const std::string elecName = "el");
@@ -306,6 +309,10 @@ protected:
   // event
   xAH::EventInfo*      m_eventInfo;
 
+  // myvertexinfo
+  //std::vector<float> m_vertexsumpt;
+  std::map<std::string, int> m_pv0pos;
+  std::map<std::string, int> m_npv;
   // trigger
   int m_passL1;
   int m_passHLT;

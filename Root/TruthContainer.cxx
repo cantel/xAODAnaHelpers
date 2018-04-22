@@ -14,6 +14,9 @@ TruthContainer::TruthContainer(const std::string& name, const std::string& detai
   m_pdgId   = new std::vector<int>();
   m_status  = new std::vector<int>();
   m_barcode = new std::vector<int>();
+  m_pt = new std::vector<float>();
+  m_eta = new std::vector<float>();
+  m_phi = new std::vector<float>();
 
 
   if(m_infoSwitch.m_type){
@@ -49,6 +52,9 @@ TruthContainer::~TruthContainer()
   if(m_debug) std::cout << " Deleting TruthContainer "  << std::endl;
 
   delete m_pdgId;
+  delete m_pt;
+  delete m_eta;
+  delete m_phi;
   delete m_status;
   delete m_barcode;
 
@@ -87,6 +93,9 @@ void TruthContainer::setTree(TTree *tree)
   ParticleContainer::setTree(tree);
 
   connectBranch<int>(tree,"pdgId",                      &m_pdgId);
+  connectBranch<float>(tree,"pt",                      &m_pt);
+  connectBranch<float>(tree,"eta",                      &m_eta);
+  connectBranch<float>(tree,"phi",                      &m_phi);
   connectBranch<int>(tree,"status",                     &m_status);
   connectBranch<int>(tree,"barcode",                    &m_barcode);
 
@@ -123,6 +132,9 @@ void TruthContainer::updateParticle(uint idx, TruthPart& truth)
   ParticleContainer::updateParticle(idx,truth);
 
   truth.pdgId                    =m_pdgId                    ->at(idx);
+  truth.pt                    =m_pt                    ->at(idx);
+  truth.eta                    =m_eta                    ->at(idx);
+  truth.phi                      =m_phi                    ->at(idx);
   truth.status                   =m_status                   ->at(idx);
   truth.barcode                  =m_barcode                  ->at(idx);
 
@@ -165,6 +177,9 @@ void TruthContainer::setBranches(TTree *tree)
   ParticleContainer::setBranches(tree);
 
   setBranch<int>(tree,"pdgId",                      m_pdgId              );
+  setBranch<float>(tree,"pt",                      m_pt              );
+  setBranch<float>(tree,"eta",                      m_eta              );
+  setBranch<float>(tree,"phi",                      m_phi              );
   setBranch<int>(tree,"status",                     m_status             );
   setBranch<int>(tree,"barcode",                    m_barcode             );
 
@@ -205,6 +220,9 @@ void TruthContainer::clear()
   ParticleContainer::clear();
 
   m_pdgId ->clear();
+  m_pt ->clear();
+  m_eta ->clear();
+  m_phi ->clear();
   m_status->clear();
   m_barcode->clear();
 
@@ -250,6 +268,9 @@ void TruthContainer::FillTruth( const xAOD::IParticle* particle ){
   m_pdgId  ->push_back( truth->pdgId() );
   m_status ->push_back( truth->status() );
   m_barcode->push_back( truth->barcode() );
+  m_pt->push_back( truth->pt() );
+  m_eta->push_back( truth->eta() );
+  m_phi->push_back( truth->phi() );
   if(m_debug)   std::cout << "Filled status " << std::endl;
 
   if(m_infoSwitch.m_type){
