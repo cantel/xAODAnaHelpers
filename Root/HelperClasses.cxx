@@ -435,6 +435,10 @@ namespace HelperClasses{
     m_area          = has_exact("area");
     m_JVC           = has_exact("JVC");
   }
+ 
+  void EmptyInfoSwitch::initialize(){
+
+  }
 
   void TruthInfoSwitch::initialize(){
     m_type          = has_exact("type");

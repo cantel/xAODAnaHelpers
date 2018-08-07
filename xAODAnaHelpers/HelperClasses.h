@@ -526,6 +526,14 @@ namespace HelperClasses {
     virtual void initialize();
   };
 
+  class EmptyInfoSwitch : public InfoSwitch {
+  public:
+  EmptyInfoSwitch(const std::string configStr) : InfoSwitch(configStr) { initialize(); };
+  virtual ~EmptyInfoSwitch(){}
+  protected:
+   virtual void initialize();
+  };
+
   /**
     @rst
         The :cpp:class:`HelperClasses::InfoSwitch` struct for Truth Information.

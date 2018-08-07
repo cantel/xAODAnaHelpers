@@ -362,6 +362,62 @@ float HelperFunctions::getPrimaryVertexZ(const xAOD::Vertex* pvx)
   return pvx_z;
 }
 
+std::vector<std::vector<float> > HelperFunctions::getVertexTrackpTs( const xAOD::VertexContainer* vertexContainer, MsgStream& msg)
+{
+
+  msg.setName(msg.name()+".getVertexTrackpTs");
+  std::vector<std::vector<float>> vertex_trackpts;
+
+  if (vertexContainer == nullptr ){
+		msg<< MSG::ERROR << "Vertex container is a null pointer. returning an empty vector." << endmsg;
+		return vertex_trackpts;
+  } 
+
+  unsigned int vtxcnt(0);
+
+  msg << MSG::DEBUG << "looping over "<< vertexContainer->size()<<" vertices"<<endmsg;
+  for( auto vtx_itr : *vertexContainer )
+  {
+	vtxcnt++;
+        std::vector<float> track_pts;
+	try {
+		vtx_itr->trackParticleLinks();
+	} catch (...) {
+		msg<< MSG::ERROR << "No track links exist for these vertices - can't find vertex with max sum pt ! Returning an empty vector" << endmsg;
+		return vertex_trackpts;
+	}
+	// stupid roundabout way to check if track links exist because stupid vxTrackAtVertexAvailable() function does not exist for AthAnalysisBase.
+	const std::vector< ElementLink< xAOD::TrackParticleContainer > > tpLinks = vtx_itr->trackParticleLinks();
+	unsigned int tp_size = tpLinks.size();
+	msg << MSG::DEBUG << "number of track links found: "<<tp_size<<endmsg;
+	if(tp_size){
+	for(auto link: tpLinks) {
+	if ( !link) { 
+		msg<<MSG::WARNING<<"invalid track link.."<<endmsg;
+		track_pts.push_back(-1);
+	}
+	else {
+        const xAOD::TrackParticle *vtxtrk = *link;
+	if ( vtxtrk ) {
+		track_pts.push_back( vtxtrk->pt() );	
+	}
+	else {
+		 msg<< MSG::WARNING << "One track particle not valid for vertex # "<<vtxcnt << endmsg;
+		 track_pts.push_back(-1);
+	}
+	}
+	} //end of track link loop
+	}
+	else track_pts.push_back(-1);
+
+	vertex_trackpts.push_back( track_pts );
+	
+  }
+
+  msg << MSG::INFO << "retrurning a vector of size "<< vertex_trackpts.size()<<endmsg;
+  return vertex_trackpts;
+}
+
 std::vector<float> HelperFunctions::getVertexSumpTsquared( const xAOD::VertexContainer* vertexContainer, MsgStream& msg)
 {
 
@@ -408,7 +464,7 @@ std::vector<float> HelperFunctions::getVertexSumpTsquared( const xAOD::VertexCon
 	
   }
 
-  msg << MSG::INFO << "retrurning a vector of size "<< sumptsquared.size()<<endmsg;
+  msg << MSG::DEBUG << "retrurning a vector of size "<< sumptsquared.size()<<endmsg;
   return sumptsquared;
 }
 

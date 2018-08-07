@@ -140,6 +140,68 @@ void HelpTreeBase::FillEvent( const xAOD::EventInfo* eventInfo, xAOD::TEvent* /*
 
 /*********************
  *
+ *   MyVertexInfo
+ *
+ ********************/
+
+void HelpTreeBase::AddMyVertexInfo(  unsigned int number, const std::string vertexName ) {
+
+  if(m_debug) Info("AddMyVertexInfo()", "Adding my vertex info variables:");
+
+  // Add these basic branches
+    //m_tree->Branch("VertexSumptsquared",          &m_vertexsumpt );
+    std::string pv0posbranchname = vertexName+"PV0pos";
+    std::string npvbranchname = vertexName+"NPV";
+    std::string pv0posbranchtype = vertexName+"PV0pos/I";
+    std::string npvbranchtype = vertexName+"NPV/I";
+
+    std::string sumtrkptbranchname = vertexName+"SumTrkPt";
+
+    m_pv0pos[pv0posbranchname] = -999;
+    m_npv[npvbranchname] = -999;
+
+    m_tree->Branch( pv0posbranchname.c_str(),          &(m_pv0pos[pv0posbranchname]),      pv0posbranchtype.c_str()       );
+    m_tree->Branch(npvbranchname.c_str(),          &(m_npv[npvbranchname]),      npvbranchtype.c_str() );
+
+    m_tree->Branch( sumtrkptbranchname.c_str(), &m_vertex_sumtrkpt[sumtrkptbranchname] );
+
+
+}
+
+void HelpTreeBase::FillMyVertexInfo( std::vector<float> vertex_sumptsquared, std::string vertexName  ) {
+
+  if ( m_debug ) { Info("HelpTreeBase::FillMyVertexInfo()", "Filling my vertex info"); }
+  std::string pv0posbranchname = vertexName+"PV0pos";
+  std::string npvbranchname = vertexName+"NPV";
+  std::string sumtrkptbranchname = vertexName+"SumTrkPt";
+  
+  //m_vertexsumpt = vertex_sumptsquared;
+  int pv0pos = std::distance(vertex_sumptsquared.begin(), std::max_element(vertex_sumptsquared.begin(), vertex_sumptsquared.end()));
+  int npv = vertex_sumptsquared.size();
+  if (m_debug) Info("FillMyVertexInfo()", "found PV0 position %i", pv0pos);
+  m_pv0pos[pv0posbranchname] = pv0pos;
+  if (m_debug) Info("FillMyVertexInfo()", "found number of PVs %i", npv);
+  m_npv[npvbranchname] = npv;
+
+
+  m_vertex_sumtrkpt[sumtrkptbranchname] = vertex_sumptsquared;
+
+}
+
+// Clear MyVertexInfo
+void HelpTreeBase::ClearMyVertexInfo() {
+
+  m_pv0pos.clear();
+  m_npv.clear();
+
+  m_vertex_sumtrkpt.clear(); 
+
+}
+
+
+
+/*********************
+ *
  *   TRIGGER
  *
  ********************/
@@ -183,40 +245,6 @@ void HelpTreeBase::AddTrigger( const std::string detailStr ) {
   }
 
   //this->AddTriggerUser();
-}
-
-void HelpTreeBase::AddMyVertexInfo(  unsigned int number, const std::string vertexName ) {
-
-  if(m_debug) Info("AddMyVertexInfo()", "Adding my vertex info variables:");
-
-  // Add these basic branches
-    //m_tree->Branch("VertexSumptsquared",          &m_vertexsumpt );
-    std::string pv0posbranchname = vertexName+"PV0pos";
-    std::string npvbranchname = vertexName+"NPV";
-    std::string pv0posbranchtype = vertexName+"PV0pos/I";
-    std::string npvbranchtype = vertexName+"NPV/I";
-
-    m_pv0pos[pv0posbranchname] = -999;
-    m_npv[npvbranchname] = -999;
-
-    m_tree->Branch( pv0posbranchname.c_str(),          &(m_pv0pos[pv0posbranchname]),      pv0posbranchtype.c_str()       );
-    m_tree->Branch(npvbranchname.c_str(),          &(m_npv[npvbranchname]),      npvbranchtype.c_str() );
-
-}
-
-void HelpTreeBase::FillMyVertexInfo( std::vector<float> sumptsquared, std::string vertexName  ) {
-
-  if ( m_debug ) { Info("HelpTreeBase::FillMyVertexInfo()", "Filling my vertex info"); }
-  std::string pv0posbranchname = vertexName+"PV0pos";
-  std::string npvbranchname = vertexName+"NPV";
-  
-  //m_vertexsumpt = sumptsquared;
-  int pv0pos = std::distance(sumptsquared.begin(), std::max_element(sumptsquared.begin(), sumptsquared.end()));
-  int npv = sumptsquared.size();
-  if (m_debug) Info("FillMyVertexInfo()", "found PV0 position %i", pv0pos);
-  m_pv0pos[pv0posbranchname] = pv0pos;
-  if (m_debug) Info("FillMyVertexInfo()", "found number of PVs %i", npv);
-  m_npv[npvbranchname] = npv;
 }
 
 // Fill the information in the trigger branches
@@ -316,15 +344,6 @@ void HelpTreeBase::ClearTrigger() {
   m_triggerPrescalesLumi.clear();
   m_isPassBits.clear();
   m_isPassBitsNames.clear();
-
-}
-
-// Clear MyVertexInfo
-void HelpTreeBase::ClearMyVertexInfo() {
-
-  m_pv0pos.clear();
-  m_npv.clear();
-  //m_vertexsumpt.clear();
 
 }
 

@@ -309,10 +309,6 @@ protected:
   // event
   xAH::EventInfo*      m_eventInfo;
 
-  // myvertexinfo
-  //std::vector<float> m_vertexsumpt;
-  std::map<std::string, int> m_pv0pos;
-  std::map<std::string, int> m_npv;
   // trigger
   int m_passL1;
   int m_passHLT;
@@ -391,6 +387,13 @@ protected:
   // met
   //
   std::map<std::string, xAH::MetContainer* > m_met;
+
+  //
+  // vertex
+  //
+  std::map<std::string, int> m_pv0pos;
+  std::map<std::string, int> m_npv;
+  std::map<std::string, std::vector< float > > m_vertex_sumtrkpt;
 
 };
 
