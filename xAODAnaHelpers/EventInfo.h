@@ -49,6 +49,8 @@ namespace xAH {
     int      m_mcChannelNumber;
     float    m_mcEventWeight;
     std::vector<float> m_mcEventWeights;
+    float    m_weight_xs;
+    float    m_weight;
     float    m_weight_pileup;
     float    m_weight_pileup_up;
     float    m_weight_pileup_down;

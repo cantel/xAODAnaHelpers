@@ -109,6 +109,7 @@ namespace xAH {
       std::vector< std::vector<float> > *m_SumPtTrkPt500;
       std::vector< std::vector<float> > *m_TrackWidthPt500;
       std::vector< std::vector<float> > *m_JVF;
+      std::vector< std::vector<float> > *m_JVFCorrAllPV;
 
       // trackPV
       std::vector<float> *m_NumTrkPt1000PV;
@@ -514,6 +515,9 @@ namespace xAH {
       std::vector<float> *m_ActiveArea4vec_eta;
       std::vector<float> *m_ActiveArea4vec_phi;
       std::vector<float> *m_ActiveArea4vec_m;
+
+      std::vector<bool> *m_isHS;
+      std::vector<bool> *m_isPU;
 
       // truth
       std::vector<int>   *m_ConeTruthLabelID;

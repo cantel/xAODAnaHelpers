@@ -323,6 +323,10 @@ namespace xAH {
       int is_MV2c10_HybBEff_85;
       std::vector<float> SF_MV2c10_HybBEff_85;
 
+      bool isHS;
+      bool isPU;
+
+
       // truth
       int   ConeTruthLabelID;
       int   TruthCount;

@@ -40,6 +40,7 @@ atlas_depends_on_subdirs( PUBLIC
                           Event/xAOD/xAODTruth
                           PhysicsAnalysis/D3PDTools/EventLoop
                           PhysicsAnalysis/D3PDTools/EventLoopGrid
+			  InnerDetector/InDetRecTools/TrackVertexAssociationTool
                           InnerDetector/InDetRecTools/InDetTrackSelectionTool
                           PhysicsAnalysis/AnalysisCommon/AssociationUtils
                           PhysicsAnalysis/AnalysisCommon/IsolationSelection
@@ -104,7 +105,7 @@ atlas_add_library( xAODAnaHelpersLib xAODAnaHelpers/*.h Root/*.h Root/*.cxx ${xA
                    TauAnalysisToolsLib AsgTools xAODMissingET JetResolutionLib
                    AssociationUtilsLib JetEDM JetUncertaintiesLib
                    JetCPInterfaces xAODBTaggingEfficiencyLib TrigConfxAODLib
-                   TrigDecisionToolLib xAODCutFlow JetMomentToolsLib
+                   TrigDecisionToolLib xAODCutFlow JetMomentToolsLib TrackVertexAssociationToolLib
                    TriggerMatchingToolLib xAODMetaDataCnv xAODMetaData
                    JetJvtEfficiencyLib PMGToolsLib JetSubStructureUtils JetTileCorrectionLib
                    ${release_libs}
@@ -114,7 +115,6 @@ atlas_add_library( xAODAnaHelpersLib xAODAnaHelpers/*.h Root/*.h Root/*.cxx ${xA
 atlas_install_python_modules( python/*.py )
 atlas_install_scripts( scripts/*.py )
 atlas_install_data( data/* )
-
 
 ### Install python packages
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")

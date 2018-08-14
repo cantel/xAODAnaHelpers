@@ -53,6 +53,12 @@ void EventInfo::setTree(TTree *tree)
     connectBranch<uint32_t>(tree, "LArFlags",                   &m_LArFlags);
   }
 
+  if ( m_mc ) {
+    connectBranch<float>(tree, "weight_xs",  &m_weight_xs);
+    connectBranch<float>(tree, "weight",  &m_weight);
+  }
+
+
   if ( m_infoSwitch.m_pileup ) {
     connectBranch<int  >(tree, "NPV",                              &m_npv);
     connectBranch<float>(tree, "actualInteractionsPerCrossing",    &m_actualMu);
@@ -161,6 +167,12 @@ void EventInfo::setBranches(TTree *tree)
       tree->Branch("rand_lumiblock_nr",          &m_rand_lumiblock_nr,"rand_lumiblock_nr/I");
     }
   }
+  
+  if ( m_mc ) {
+      tree->Branch("weight_xs",      &m_weight_xs,  "weight_xs/F");
+      tree->Branch("weight",      &m_weight,  "weight/F");
+  }
+
 
   if ( m_infoSwitch.m_shapeEM ) {
     tree->Branch("rhoEM",                &m_rhoEM,            "rhoEM/D");
@@ -214,6 +226,8 @@ void EventInfo::clear()
   m_weight_pileup = 1.;
   m_weight_pileup_down = 1.;
   m_weight_pileup_up = 1.;
+  m_weight_xs = 1.;
+  m_weight = 1.;
   m_timeStamp = -999;
   m_timeStampNSOffset = -999;
   // pileup
@@ -325,6 +339,12 @@ void EventInfo::FillEvent( const xAOD::EventInfo* eventInfo,  xAOD::TEvent* even
       static SG::AuxElement::ConstAccessor< float > weight_pileup_down ("PileupWeight_DOWN");
       if ( weight_pileup_up.isAvailable( *eventInfo ) )  { m_weight_pileup_up = weight_pileup_up( *eventInfo );}    else { m_weight_pileup_up = 1.0; }
       if ( weight_pileup_down.isAvailable( *eventInfo ) ){ m_weight_pileup_down = weight_pileup_down( *eventInfo );}else { m_weight_pileup_down = 1.0; }
+
+      // my addition: adding computed JZW weighting
+      static SG::AuxElement::ConstAccessor< float > weight_xs("weight_xs");
+      static SG::AuxElement::ConstAccessor< float > weight("weight");	
+      if ( weight_xs.isAvailable( *eventInfo ) )  { m_weight_xs = weight_xs( *eventInfo ); } else { m_weight_xs = 1.0; }
+      if ( weight.isAvailable( *eventInfo ) )  { m_weight = weight( *eventInfo ); } else { m_weight = 1.0; }
 
     }
 

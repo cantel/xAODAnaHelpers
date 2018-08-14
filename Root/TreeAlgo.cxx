@@ -286,13 +286,8 @@ EL::StatusCode TreeAlgo :: execute ()
   const xAOD::Vertex* primaryVertex = m_retrievePV ? HelperFunctions::getPrimaryVertex( vertices , msg() ) : nullptr;
 
   	
-  
-
-  std::cout<<"In TreeAlg:  What is the size of these systNames ?? "<<event_systNames.size()<<std::endl;
-
   for(const auto& systName: event_systNames){
 
-    std::cout<<"In TreeAlg:  What are these systNames ?? "<<systName<<std::endl;
     auto& helpTree = m_trees[systName];
 
     // assume the nominal container by default
@@ -331,10 +326,10 @@ EL::StatusCode TreeAlgo :: execute ()
   	const xAOD::VertexContainer* secondvertices(nullptr);
     	ANA_CHECK( HelperFunctions::retrieve(secondvertices, m_vertexContainers.at(ll), m_event, m_store, msg()) );
     	std::vector<float> vertex_sumptsquared = HelperFunctions::getVertexSumpTsquared( secondvertices, msg() );
+    	//std::vector<std::vector<float> > vertex_trackpts = HelperFunctions::getVertexTrackpTs( secondvertices, msg() );
         helpTree->FillMyVertexInfo( vertex_sumptsquared, m_vertexBranches.at(ll) );
 	std::string ftkstring = "FTK";
-        if ((m_vertexContainers.at(ll)).find(ftkstring) != std::string::npos)
-	ftkvertex_sumptsquared = vertex_sumptsquared;
+        if ((m_vertexContainers.at(ll)).find(ftkstring) != std::string::npos) ftkvertex_sumptsquared = vertex_sumptsquared;
    }
       if ( reject ) continue;
   }
@@ -409,13 +404,14 @@ EL::StatusCode TreeAlgo :: execute ()
         const xAOD::JetContainer* inTrigJets(nullptr);
         ANA_CHECK( HelperFunctions::retrieve(inTrigJets, m_trigJetContainers.at(ll), m_event, m_store, msg()) );
 	
-	// my own code - to deal with unsorted FTK vertices
-	int PV0pos(0);
-	if ( !ftkvertex_sumptsquared.empty())
-        	PV0pos = std::distance( ftkvertex_sumptsquared.begin(), std::max_element(ftkvertex_sumptsquared.begin(), ftkvertex_sumptsquared.end()));
-	ANA_MSG_DEBUG("In TreeAlg: returning trigger PV0 vertex position "<<PV0pos); 
+	// my own code - to deal with unsorted FTK vertices - no longer needed: FTK vertices are now sorted!!
+	//int PV0pos(0);
+	//if ( !ftkvertex_sumptsquared.empty())
+        //	PV0pos = std::distance( ftkvertex_sumptsquared.begin(), std::max_element(ftkvertex_sumptsquared.begin(), ftkvertex_sumptsquared.end()));
+	//ANA_MSG_DEBUG("In TreeAlg: returning trigger PV0 vertex position "<<PV0pos); 
+	// !!!! no longer needed: FTK vertices are now sorted !!!
 
-        helpTree->FillJets( inTrigJets, PV0pos, m_trigJetBranches.at(ll) );
+        helpTree->FillJets( inTrigJets, HelperFunctions::getPrimaryVertexLocation(vertices, msg()), m_trigJetBranches.at(ll) );
       }
 
       if ( reject ) continue;

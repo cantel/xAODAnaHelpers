@@ -53,6 +53,9 @@
 #include <xAODAnaHelpers/Writer.h>
 #include <xAODAnaHelpers/MessagePrinterAlgo.h>
 
+/* my own */
+#include <xAODAnaHelpers/MultijetAlgorithm.h>
+
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -98,6 +101,7 @@
 #pragma link C++ class MetHistsAlgo+;
 #pragma link C++ class TrackHistsAlgo+;
 #pragma link C++ class ClusterHistsAlgo+;
+#pragma link C++ class MultijetAlgorithm+;
 
 #pragma link C++ class TreeAlgo+;
 

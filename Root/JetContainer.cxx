@@ -96,6 +96,7 @@ JetContainer::JetContainer(const std::string& name, const std::string& detailStr
     m_SumPtTrkPt500            = new std::vector< std::vector<float> >  ();
     m_TrackWidthPt500          = new std::vector< std::vector<float> >  ();
     m_JVF                      = new std::vector< std::vector<float> >  ();
+    m_JVFCorrAllPV           = new std::vector< std::vector<float> >  ();
   }
 
   // trackPV
@@ -375,7 +376,13 @@ JetContainer::JetContainer(const std::string& name, const std::string& detailStr
     m_ActiveArea4vec_phi = new std::vector<float>();
     m_ActiveArea4vec_m   = new std::vector<float>();
   }
+  
+  if ( m_mc ) {
+   
+	m_isHS = new std::vector<bool>();
+	m_isPU = new std::vector<bool>();
 
+  }
 
   // truth
   if ( m_infoSwitch.m_truth && m_mc ) {
@@ -511,6 +518,7 @@ JetContainer::~JetContainer()
     delete m_SumPtTrkPt500    ;
     delete m_TrackWidthPt500  ;
     delete m_JVF              ;
+    delete m_JVFCorrAllPV   ;
   }
 
 
@@ -753,6 +761,10 @@ JetContainer::~JetContainer()
     delete m_ActiveArea4vec_m   ;
   }
 
+  if ( m_mc ) {
+	delete m_isHS;
+	delete m_isPU;
+  }
 
   // truth
   if ( m_infoSwitch.m_truth && m_mc ) {
@@ -1007,6 +1019,13 @@ void JetContainer::setTree(TTree *tree)
 
     for(auto btag : m_btags)
       btag->setTree(tree, m_name);
+
+  if ( m_mc ) {
+
+	connectBranch<bool> (tree,"isHS", &m_isHS );
+	connectBranch<bool> (tree,"isPU", &m_isPU );
+
+  }
 
   // truth
   if(m_infoSwitch.m_truth)
@@ -1481,6 +1500,13 @@ void JetContainer::updateParticle(uint idx, Jet& jet)
 	}
     }
 
+  if ( m_mc ) {
+
+	jet.isHS = m_isHS->at(idx);
+	jet.isPU = m_isPU->at(idx);
+
+  }
+
   // truth
   if(m_infoSwitch.m_truth)
     {
@@ -1595,6 +1621,7 @@ void JetContainer::setBranches(TTree *tree)
     setBranch<std::vector<float> >(tree,"SumPtTrkPt500",     m_SumPtTrkPt500  );
     setBranch<std::vector<float> >(tree,"TrackWidthPt500",   m_TrackWidthPt500    );
     setBranch<std::vector<float> >(tree,"JVF",               m_JVF         );
+    setBranch<std::vector<float> >(tree,"JVFCorrAllPV",    m_JVFCorrAllPV  );
   }
 
   if ( m_infoSwitch.m_trackPV || m_infoSwitch.m_jvt ) {
@@ -1838,6 +1865,12 @@ void JetContainer::setBranches(TTree *tree)
     setBranch<float>(tree,"ActiveArea4vec_phi", m_ActiveArea4vec_phi);
     setBranch<float>(tree,"ActiveArea4vec_m",   m_ActiveArea4vec_m);
   }
+ 
+  if ( m_mc ) {
+	setBranch<bool>(tree,"isHS", m_isHS );
+	setBranch<bool>(tree,"isPU", m_isPU );
+  }
+
 
   if ( m_infoSwitch.m_truth && m_mc ) {
     setBranch<int  >(tree,"ConeTruthLabelID",   m_ConeTruthLabelID );
@@ -1977,6 +2010,7 @@ void JetContainer::clear()
     m_SumPtTrkPt500            ->clear();
     m_TrackWidthPt500          ->clear();
     m_JVF                      ->clear();
+    m_JVFCorrAllPV           ->clear();
   }
 
   // trackPV
@@ -2205,6 +2239,11 @@ void JetContainer::clear()
     m_ActiveArea4vec_eta ->clear();
     m_ActiveArea4vec_phi ->clear();
     m_ActiveArea4vec_m   ->clear();
+  }
+
+  if ( m_mc ) {
+	m_isHS->clear();
+	m_isPU->clear();
   }
 
   // truth
@@ -2475,6 +2514,7 @@ void JetContainer::FillJet( const xAOD::IParticle* particle, const xAOD::Vertex*
     static SG::AuxElement::ConstAccessor< std::vector<float> > sumPt500 ("SumPtTrkPt500");
     static SG::AuxElement::ConstAccessor< std::vector<float> > trkWidth500 ("TrackWidthPt500");
     static SG::AuxElement::ConstAccessor< std::vector<float> > jvf("JVF");
+    static SG::AuxElement::ConstAccessor< std::vector<float> > jvfCorrAllPV ("JVFCorrAllPV");
 
     if ( m_infoSwitch.m_trackAll ) {
 
@@ -2516,6 +2556,14 @@ void JetContainer::FillJet( const xAOD::IParticle* particle, const xAOD::Vertex*
       if ( jvf.isAvailable( *jet ) ) {
         m_JVF->push_back( jvf( *jet ) );
       } else { m_JVF->push_back( junkFlt ); }
+
+      if ( jvfCorrAllPV.isAvailable( *jet ) ) {
+        m_JVFCorrAllPV->push_back( sumPt1000( *jet ) );
+        std::transform((m_JVFCorrAllPV->back()).begin(),
+                     (m_JVFCorrAllPV->back()).end(),
+                     (m_JVFCorrAllPV->back()).begin(),
+                     std::bind2nd(std::divides<float>(), m_units));
+      } else { m_JVFCorrAllPV->push_back( junkFlt ); }
 
     } // trackAll
 
@@ -3182,6 +3230,14 @@ void JetContainer::FillJet( const xAOD::IParticle* particle, const xAOD::Vertex*
     safeFill<float, float, xAOD::Jet>(jet, activeArea_m, m_ActiveArea4vec_m, -999);
   }
 
+  if ( m_mc ) {
+
+    static SG::AuxElement::ConstAccessor<bool> isHS ("isHS");
+    safeFill<bool, bool, xAOD::Jet>(jet, isHS, m_isHS, false);
+    static SG::AuxElement::ConstAccessor<bool> isPU ("isPU");
+    safeFill<bool, bool, xAOD::Jet>(jet, isPU, m_isPU, false);
+
+  }
 
   if ( m_infoSwitch.m_truth && m_mc ) {
 
